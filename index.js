@@ -33,11 +33,11 @@ bot.on('message', (msg) => {
   const text = msg.text;
 
   if (text === 'O‘qituvchilar haqida') {
-    bot.sendMessage(chatId, 'O‘qituvchilar:\n1. Dilmurod - Matematika\n2. Laylo - Fizika\n3. Anvar - Ingliz tili');
+    bot.sendMessage(chatId, 'O‘qituvchilar:\n1.');
   }
 
   if (text === 'O‘quv markaz haqida') {
-    bot.sendMessage(chatId, 'Markazimiz Toshkent shahrida joylashgan. Darslar yuqori sifatda olib boriladi.');
+    bot.sendMessage(chatId, 'Markazimiz Rapqon shaharcha, Abdurazoq MFY. Darslar yuqori sifatda olib boriladi.');
   }
 
   if (text === 'Admin bilan bog‘lanish') {
