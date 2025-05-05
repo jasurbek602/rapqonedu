@@ -5,93 +5,95 @@ const ADMIN_ID = 2053660453;
 
 const bot = new TelegramBot(token, { polling: true });
 
-const users = {};
+// Foydalanuvchi ma'lumotlarini vaqtincha saqlash
+const userStates = {};
+
+bot.setMyCommands([
+  { command: '/start', description: 'Botni boshlash' }
+]);
 
 bot.onText(/\/start/, (msg) => {
   const chatId = msg.chat.id;
-  users[chatId] = { step: 'name' };
+  const name = msg.from.first_name;
 
-  const opts = {
+  bot.sendMessage(chatId, `Assalomu alaykum, ${name}! Qaysi bo‘limga o‘tmoqchisiz?`, {
     reply_markup: {
-      keyboard: [["Ro'yxatdan o'tish"], ["Admin bilan bog'lanish"]],
+      keyboard: [
+        ['O‘quv markaz haqida'],
+        ['O‘qituvchilar haqida'],
+        ['Ro‘yxatdan o‘tish']
+      ],
       resize_keyboard: true,
-      one_time_keyboard: true
+      one_time_keyboard: false
     }
-  };
-  bot.sendMessage(chatId, "Xush kelibsiz! Quyidagilardan birini tanlang:", opts);
+  });
 });
 
-bot.on('message', (msg) => {
+bot.on('message', async (msg) => {
   const chatId = msg.chat.id;
   const text = msg.text;
-  const contact = msg.contact;
-  const user = users[chatId] || {};
 
-  if (text === "Ro'yxatdan o'tish") {
-    users[chatId] = { step: 'name' };
-    bot.sendMessage(chatId, "Iltimos, ism va familyangizni kiriting:");
-    return;
+  if (text === 'O‘quv markaz haqida') {
+    bot.sendMessage(chatId, `Bizning o‘quv markazimiz zamonaviy fanlarni chuqur o‘rgatishga mo‘ljallangan.
+Manzil: Rapqon, Abdurazzoq MFY.
+Fanlar: Matematika, Fizika, Ingliz tili.
+Bog‘lanish: +998 99-322-57-28`);
   }
 
-  if (text === "Admin bilan bog'lanish") {
-    bot.sendMessage(chatId, "Admin bilan bog'lanish: @your_admin_username");
-    return;
-  }
-
-  if (user.step === 'name') {
-    users[chatId].name = text;
-    users[chatId].step = 'phone';
-    bot.sendMessage(chatId, "Telefon raqamingizni yuboring:", {
+  else if (text === 'O‘qituvchilar haqida') {
+    bot.sendMessage(chatId, ``, {
       reply_markup: {
-        keyboard: [[{ text: "Raqamni yuborish", request_contact: true }]],
-        resize_keyboard: true,
-        one_time_keyboard: true
+        inline_keyboard: [
+          [{ text: 'Ro‘yxatdan o‘tish', callback_data: 'register' }]
+        ]
       }
     });
-    return;
   }
 
-  if (user.step === 'phone' && contact) {
-    users[chatId].phone = contact.phone_number;
-    users[chatId].step = 'subject';
-    bot.sendMessage(chatId, "Qaysi fan bo'yicha ro'yxatdan o'tmoqchisiz?", {
-      reply_markup: {
-        keyboard: [["Matematika"], ["Fizika"], ["Ingliz tili"]],
-        resize_keyboard: true,
-        one_time_keyboard: true
-      }
-    });
-    return;
+  else if (text === 'Ro‘yxatdan o‘tish') {
+    userStates[chatId] = { step: 'name' };
+    bot.sendMessage(chatId, 'Ism familyangizni kiriting:');
+  }
+});
+
+bot.on('callback_query', (query) => {
+  const chatId = query.message.chat.id;
+
+  if (query.data === 'register') {
+    userStates[chatId] = { step: 'name' };
+    bot.sendMessage(chatId, 'Ism familyangizni kiriting:');
   }
 
-  if (user.step === 'subject' && ["Matematika", "Fizika", "Ingliz tili"].includes(text)) {
-    users[chatId].subject = text;
-    users[chatId].step = 'location';
-    bot.sendMessage(chatId, "Sizga qaysi filialimiz qulayroq?", {
-      reply_markup: {
-        keyboard: [["Yunusobod"], ["Chilonzor"], ["Olmazor"]],
-        resize_keyboard: true,
-        one_time_keyboard: true
-      }
-    });
-    return;
-  }
+  bot.answerCallbackQuery(query.id);
+});
 
-  if (user.step === 'location') {
-    users[chatId].location = text;
+bot.on('text', (msg) => {
+  const chatId = msg.chat.id;
+  const text = msg.text;
+  const state = userStates[chatId];
 
-    const info = users[chatId];
-    const fullInfo = `Yangi ro'yxat:
+  if (!state) return;
 
-Ism Familya: ${info.name}
-Telefon: ${info.phone}
-Fan: ${info.subject}
-Joylashuv: ${info.location}
-Foydalanuvchi: @${msg.from.username || 'yo‘q'} (ID: ${msg.from.id})`;
+  if (state.step === 'name') {
+    state.name = text;
+    state.step = 'phone';
+    bot.sendMessage(chatId, 'Telefon raqamingizni kiriting:');
+  } else if (state.step === 'phone') {
+    state.phone = text;
+    state.step = 'subject';
+    bot.sendMessage(chatId, 'Qaysi fanga yozilmoqchisiz? (Matematika/Fizika/Ingliz tili)');
+  } else if (state.step === 'subject') {
+    state.subject = text;
 
-    bot.sendMessage(ADMIN_ID, fullInfo);
-    bot.sendMessage(chatId, "Ro'yxatingiz muvaffaqiyatli qabul qilindi. Tez orada siz bilan bog'lanamiz.");
-    users[chatId].step = null;
-    return;
+    const message = `Yangi ro‘yxatdan o‘tish:
+
+Ism: ${state.name}
+Tel: ${state.phone}
+Fan: ${state.subject}`;
+
+    bot.sendMessage(adminChatId, message);
+    bot.sendMessage(chatId, 'Ro‘yxatdan o‘tishi qabul qilindi! Tez orada siz bilan bog‘lanamiz');
+
+    delete userStates[chatId];
   }
 });
