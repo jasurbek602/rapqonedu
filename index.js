@@ -1,16 +1,16 @@
 const TelegramBot = require('node-telegram-bot-api');
 
 const token = '7743866452:AAEwG27jefcV4oVDrNjd8-CR01aymEPPi4c';
-const ADMIN_ID = 2053660453;
+const adminChatId = 2053660453;
 
 const bot = new TelegramBot(token, { polling: true });
 
-ot.onText(/\/start/, (msg) => {
-  const chatId = msg.chat.id;
-  const message = `Assalomu alaykum!
+const userSteps = {};
 
-Bu bot o‘quv markazingiz uchun yaratilgan.
-Quyidagi bo‘limlardan birini tanlang:`;
+bot.onText(/\/start/, (msg) => {
+  const chatId = msg.chat.id;
+
+  const welcome = `Assalomu alaykum!\n\nBu bot o‘quv markazi uchun mo‘ljallangan. Quyidagi bo‘limlardan birini tanlang:`;
 
   const options = {
     reply_markup: {
@@ -21,31 +21,23 @@ Quyidagi bo‘limlardan birini tanlang:`;
         ['Admin bilan bog‘lanish']
       ],
       resize_keyboard: true,
-      one_time_keyboard: true,
+      one_time_keyboard: false,
     },
   };
 
-  bot.sendMessage(chatId, message, options);
+  bot.sendMessage(chatId, welcome, options);
 });
 
-// Bo‘limlar
 bot.on('message', (msg) => {
   const chatId = msg.chat.id;
   const text = msg.text;
 
   if (text === 'O‘qituvchilar haqida') {
-    bot.sendMessage(chatId, 'O');
-    bot.sendMessage(chatId, "Ro‘yxatdan o‘tish uchun pastdagi tugmani bosing.", {
-      reply_markup: {
-        keyboard: [['Ro‘yxatdan o‘tish']],
-        resize_keyboard: true,
-        one_time_keyboard: true,
-      },
-    });
+    bot.sendMessage(chatId, 'O‘qituvchilar:\n1. Dilmurod - Matematika\n2. Laylo - Fizika\n3. Anvar - Ingliz tili');
   }
 
   if (text === 'O‘quv markaz haqida') {
-    bot.sendMessage(chatId, "Bizning o‘quv markaz Farg'ona shahrida joylashgan. Darslar zamonaviy va interaktiv tarzda o‘tiladi.");
+    bot.sendMessage(chatId, 'Markazimiz Toshkent shahrida joylashgan. Darslar yuqori sifatda olib boriladi.');
   }
 
   if (text === 'Admin bilan bog‘lanish') {
@@ -53,22 +45,37 @@ bot.on('message', (msg) => {
   }
 
   if (text === 'Ro‘yxatdan o‘tish') {
-    bot.sendMessage(chatId, "Ism familiyangizni kiriting:");
-    bot.once('message', (msg1) => {
-      const name = msg1.text;
-      bot.sendMessage(chatId, "Telefon raqamingizni kiriting:");
-      bot.once('message', (msg2) => {
-        const phone = msg2.text;
-        bot.sendMessage(chatId, "Qaysi fan bo‘yicha ro‘yxatdan o‘tmoqchisiz? (Matematika, Fizika, Ingliz tili):");
-        bot.once('message', (msg3) => {
-          const subject = msg3.text;
+    userSteps[chatId] = { step: 1 };
+    bot.sendMessage(chatId, "Iltimos, ism va familiyangizni kiriting:");
+  }
 
-          const info = `Yangi ro‘yxatdan o‘tuvchi:\nIsm Familya: ${name}\nTelefon: ${phone}\nFan: ${subject}`;
+  const step = userSteps[chatId]?.step;
 
-          bot.sendMessage(adminChatId, info);
-          bot.sendMessage(chatId, "Ma’lumotlaringiz yuborildi! Tez orada siz bilan bog‘lanamiz.");
-        });
-      });
-    });
+  if (step === 1 && text !== 'Ro‘yxatdan o‘tish') {
+    userSteps[chatId].name = text;
+    userSteps[chatId].step = 2;
+    bot.sendMessage(chatId, "Endi telefon raqamingizni kiriting:");
+  } else if (step === 2) {
+    userSteps[chatId].phone = text;
+    userSteps[chatId].step = 3;
+
+    const subjects = {
+      reply_markup: {
+        keyboard: [['Matematika'], ['Fizika'], ['Ingliz tili']],
+        resize_keyboard: true,
+        one_time_keyboard: true,
+      },
+    };
+
+    bot.sendMessage(chatId, "Qaysi fan bo‘yicha ro‘yxatdan o‘tmoqchisiz?", subjects);
+  } else if (step === 3) {
+    userSteps[chatId].subject = text;
+
+    const info = `Yangi ro‘yxatdan o‘tuvchi:\nIsm: ${userSteps[chatId].name}\nTelefon: ${userSteps[chatId].phone}\nFan: ${userSteps[chatId].subject}`;
+
+    bot.sendMessage(adminChatId, info);
+    bot.sendMessage(chatId, "Ma’lumotlaringiz muvaffaqiyatli yuborildi! Tez orada siz bilan bog‘lanamiz.");
+
+    delete userSteps[chatId];
   }
 });
