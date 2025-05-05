@@ -5,95 +5,70 @@ const ADMIN_ID = 2053660453;
 
 const bot = new TelegramBot(token, { polling: true });
 
-// Foydalanuvchi ma'lumotlarini vaqtincha saqlash
-const userStates = {};
-
-bot.setMyCommands([
-  { command: '/start', description: 'Botni boshlash' }
-]);
-
-bot.onText(/\/start/, (msg) => {
+ot.onText(/\/start/, (msg) => {
   const chatId = msg.chat.id;
-  const name = msg.from.first_name;
+  const message = `Assalomu alaykum!
 
-  bot.sendMessage(chatId, `Assalomu alaykum, ${name}! Qaysi bo‘limga o‘tmoqchisiz?`, {
+Bu bot o‘quv markazingiz uchun yaratilgan.
+Quyidagi bo‘limlardan birini tanlang:`;
+
+  const options = {
     reply_markup: {
       keyboard: [
-        ['O‘quv markaz haqida'],
+        ['Ro‘yxatdan o‘tish'],
         ['O‘qituvchilar haqida'],
-        ['Ro‘yxatdan o‘tish']
+        ['O‘quv markaz haqida'],
+        ['Admin bilan bog‘lanish']
       ],
       resize_keyboard: true,
-      one_time_keyboard: false
-    }
-  });
+      one_time_keyboard: true,
+    },
+  };
+
+  bot.sendMessage(chatId, message, options);
 });
 
-bot.on('message', async (msg) => {
+// Bo‘limlar
+bot.on('message', (msg) => {
   const chatId = msg.chat.id;
   const text = msg.text;
 
-  if (text === 'O‘quv markaz haqida') {
-    bot.sendMessage(chatId, `Bizning o‘quv markazimiz zamonaviy fanlarni chuqur o‘rgatishga mo‘ljallangan.
-Manzil: Rapqon, Abdurazzoq MFY.
-Fanlar: Matematika, Fizika, Ingliz tili.
-Bog‘lanish: +998 99-322-57-28`);
-  }
-
-  else if (text === 'O‘qituvchilar haqida') {
-    bot.sendMessage(chatId, ``, {
+  if (text === 'O‘qituvchilar haqida') {
+    bot.sendMessage(chatId, 'O');
+    bot.sendMessage(chatId, "Ro‘yxatdan o‘tish uchun pastdagi tugmani bosing.", {
       reply_markup: {
-        inline_keyboard: [
-          [{ text: 'Ro‘yxatdan o‘tish', callback_data: 'register' }]
-        ]
-      }
+        keyboard: [['Ro‘yxatdan o‘tish']],
+        resize_keyboard: true,
+        one_time_keyboard: true,
+      },
     });
   }
 
-  else if (text === 'Ro‘yxatdan o‘tish') {
-    userStates[chatId] = { step: 'name' };
-    bot.sendMessage(chatId, 'Ism familyangizni kiriting:');
-  }
-});
-
-bot.on('callback_query', (query) => {
-  const chatId = query.message.chat.id;
-
-  if (query.data === 'register') {
-    userStates[chatId] = { step: 'name' };
-    bot.sendMessage(chatId, 'Ism familyangizni kiriting:');
+  if (text === 'O‘quv markaz haqida') {
+    bot.sendMessage(chatId, "Bizning o‘quv markaz Farg'ona shahrida joylashgan. Darslar zamonaviy va interaktiv tarzda o‘tiladi.");
   }
 
-  bot.answerCallbackQuery(query.id);
-});
+  if (text === 'Admin bilan bog‘lanish') {
+    bot.sendMessage(chatId, 'Admin: @your_admin_username');
+  }
 
-bot.on('text', (msg) => {
-  const chatId = msg.chat.id;
-  const text = msg.text;
-  const state = userStates[chatId];
+  if (text === 'Ro‘yxatdan o‘tish') {
+    bot.sendMessage(chatId, "Ism familiyangizni kiriting:");
+    bot.once('message', (msg1) => {
+      const name = msg1.text;
+      bot.sendMessage(chatId, "Telefon raqamingizni kiriting:");
+      bot.once('message', (msg2) => {
+        const phone = msg2.text;
+        bot.sendMessage(chatId, "Qaysi fan bo‘yicha ro‘yxatdan o‘tmoqchisiz? (Matematika, Fizika, Ingliz tili):");
+        bot.once('message', (msg3) => {
+          const subject = msg3.text;
 
-  if (!state) return;
+          const info = `Yangi ro‘yxatdan o‘tuvchi:\nIsm Familya: ${name}\nTelefon: ${phone}\nFan: ${subject}`;
 
-  if (state.step === 'name') {
-    state.name = text;
-    state.step = 'phone';
-    bot.sendMessage(chatId, 'Telefon raqamingizni kiriting:');
-  } else if (state.step === 'phone') {
-    state.phone = text;
-    state.step = 'subject';
-    bot.sendMessage(chatId, 'Qaysi fanga yozilmoqchisiz? (Matematika/Fizika/Ingliz tili)');
-  } else if (state.step === 'subject') {
-    state.subject = text;
-
-    const message = `Yangi ro‘yxatdan o‘tish:
-
-Ism: ${state.name}
-Tel: ${state.phone}
-Fan: ${state.subject}`;
-
-    bot.sendMessage(adminChatId, message);
-    bot.sendMessage(chatId, 'Ro‘yxatdan o‘tishi qabul qilindi! Tez orada siz bilan bog‘lanamiz');
-
-    delete userStates[chatId];
+          bot.sendMessage(adminChatId, info);
+          bot.sendMessage(chatId, "Ma’lumotlaringiz yuborildi! Tez orada siz bilan bog‘lanamiz.");
+        });
+      });
+    });
   }
 });
