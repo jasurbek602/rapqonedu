@@ -2,6 +2,7 @@ const TelegramBot = require('node-telegram-bot-api');
 
 const token = '7743866452:AAEwG27jefcV4oVDrNjd8-CR01aymEPPi4c';
 const adminChatId = 2053660453;
+const adminChat = 1915666976;
 
 const bot = new TelegramBot(token, { polling: true });
 
@@ -21,7 +22,7 @@ bot.onText(/\/start/, (msg) => {
         ['Admin bilan bog‘lanish']
       ],
       resize_keyboard: true,
-      one_time_keyboard: false,
+      one_time_keyboard: true,
     },
   };
 
@@ -74,7 +75,8 @@ bot.on('message', (msg) => {
     const info = `Yangi ro‘yxatdan o‘tuvchi:\nIsm: ${userSteps[chatId].name}\nTelefon: ${userSteps[chatId].phone}\nFan: ${userSteps[chatId].subject}`;
 
     bot.sendMessage(adminChatId, info);
-    bot.sendMessage(chatId, "Ma’lumotlaringiz muvaffaqiyatli yuborildi! Tez orada siz bilan bog‘lanamiz.");
+    bot.sendMessage(adminChat, info);
+    bot.sendMessage(chatId, "Ma’lumotlaringiz muvaffaqiyatli yuborildi! Tez orada siz bilan bog‘lanamiz. Qayta boshlash uchun /start ni bosing");
 
     delete userSteps[chatId];
   }
