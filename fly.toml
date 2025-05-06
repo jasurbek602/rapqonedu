@@ -1,9 +1,9 @@
-# fly.toml app configuration file generated for rapqonedu on 2025-05-06T13:19:13Z
+# fly.toml app configuration file generated for rapqonedu-rl8ypa on 2025-05-06T14:09:20Z
 #
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
 
-app = 'rapqonedu'
+app = 'rapqonedu-rl8ypa'
 primary_region = 'hkg'
 
 [build]
