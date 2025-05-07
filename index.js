@@ -34,7 +34,7 @@ bot.on('message', (msg) => {
   const text = msg.text;
 
   if (text == 'O‘qituvchilar haqida') {
-    bot.sendPhoto(chatId, 'AgACAgIAAxkBAAPtaBskqtLZ3nqozze9x4Gbq2AcY4IAAtTpMRtQTNlITF1tsxFx2xkBAAMCAAN5AAM2BA', { caption: 'Rajabaliyev Behruzbek \n Fan: Matematika \n Tajriba: 4 yil \n 1000tadan ortiq o`quvchiga talim bergan', 
+    bot.sendPhoto(chatId, 'https://cdjvb-jamoliddinos-projects.vercel.app/behruzbek.jpg', { caption: 'Rajabaliyev Behruzbek \n Fan: Matematika \n Tajriba: 4 yil \n 1000tadan ortiq o`quvchiga talim bergan', 
       reply_markup: {
       inline_keyboard: [
         [
@@ -43,7 +43,7 @@ bot.on('message', (msg) => {
       ]
     }
    });
-    bot.sendPhoto(chatId, 'AgACAgIAAxkBAAPvaBsk3xzUR1_Hy3hzPndmRCoxisIAAtXpMRtQTNlIMmtd3aYiJLEBAAMCAAN5AAM2BA', { caption: 'Ozodbek Qosimov \n Fan: Matematika Fizika \n Tajriba: 4 yil \n 1000taga yaqin o`quvchiga talim bergan',
+    bot.sendPhoto(chatId, 'https://cdjvb-jamoliddinos-projects.vercel.app/ozodbek.jpg', { caption: 'Ozodbek Qosimov \n Fan: Matematika Fizika \n Tajriba: 4 yil \n 1000taga yaqin o`quvchiga talim bergan',
       reply_markup: {
         inline_keyboard: [
           [
@@ -59,7 +59,7 @@ bot.on('message', (msg) => {
   }
 
   if (text === 'Telegram kanal') {
-    bot.sendMessage(chatId, 'Admin: @your_admin_username');
+    bot.sendMessage(chatId, '@RapqonEdu2024');
   }
 
   if (text === 'Ro‘yxatdan o‘tish') {
